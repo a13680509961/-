@@ -15,6 +15,10 @@ export const bodyParts: BodyPart[] = [
   { id: 'arm', name: '上肢', keywords: ['手', '手臂', '胳膊'] },
   { id: 'leg', name: '下肢', keywords: ['腿', '脚', '下肢'] },
   { id: 'skin', name: '皮肤', keywords: ['皮肤', '身上', '皮疹'] },
+  { id: 'neck', name: '颈部', keywords: ['颈', '脖子', '颈部'] },
+  { id: 'limbs', name: '四肢关节', keywords: ['关节', '四肢', '手脚关节', '膝盖', '肩'] },
+  { id: 'genital', name: '泌尿生殖', keywords: ['泌尿', '生殖', '尿道', '会阴', '前列腺'] },
+  { id: 'mouth', name: '口腔', keywords: ['口腔', '嘴', '舌头', '牙齿', '牙龈'] },
 ];
 
 export interface CompanionSymptom {
