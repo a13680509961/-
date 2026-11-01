@@ -1,21 +1,50 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { ArrowRight, ArrowLeft, Sparkles, ChevronRight } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { ArrowRight, ArrowLeft, Sparkles, ChevronRight, Wand2, RefreshCw } from 'lucide-react';
 import { useConsultStore } from '@/stores/consultStore';
-import { bodyParts, companionSymptoms, companionCategories, descriptorGroups, quickLocationTags, durationOptions, severityOptions } from '@/data/bodyParts';
+import { bodyParts, bodyPartEmojis, companionSymptoms, companionCategories, descriptorGroups, quickLocationTags, durationOptions, severityOptions } from '@/data/bodyParts';
 import { diagnose, type DiagnosisResult } from '@/utils/diagnose';
 import { saveResult } from '@/utils/storage';
+import { getSymptomHints, generateAIDescription } from '@/utils/symptomHints';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 const steps = ['部位', '描述', '伴随', '时长', '程度'];
-const emojiMap: Record<string, string> = { head: '🧠', eye: '👁️', ear: '👂', throat: '🫦', chest: '🫀', stomach: '🫃', back: '🦴', arm: '✋', leg: '🦵', skin: '✨' };
 
 export default function Consult() {
   const navigate = useNavigate();
   const store = useConsultStore();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [hintSeed, setHintSeed] = useState(0);
+  const [aiGenerating, setAiGenerating] = useState(false);
   const canProceed = store.canProceed();
+
+  // 根据所选部位动态获取 AI 症状提示（hintSeed 变化 => 换一批确定性结果）
+  const symptomHints = useMemo(
+    () => getSymptomHints(store.bodyPartId, 12, hintSeed),
+    [store.bodyPartId, hintSeed]
+  );
+
+  const appendToDescription = (text: string) => {
+    const cur = store.description;
+    const sep = cur && !cur.endsWith('，') && !cur.endsWith('。') ? '，' : '';
+    store.setDescription(cur + sep + text);
+  };
+
+  const handleAIGenerate = () => {
+    setAiGenerating(true);
+    setTimeout(() => {
+      const suggestion = generateAIDescription(store.bodyPartId, Date.now() % 1000000);
+      // 用户已有内容时追加而非覆盖，保持已写描述不被丢失
+      appendToDescription(suggestion);
+      setAiGenerating(false);
+    }, 600);
+  };
+
+  const goBack = () => {
+    if (store.step === 0) navigate(-1);
+    else { store.setStep(store.step - 1); setError(''); }
+  };
 
   const handleNext = () => {
     if (!canProceed) return;
@@ -53,6 +82,12 @@ export default function Consult() {
         </div>
       </div>
 
+      {store.step > 0 && (
+        <button onClick={goBack} className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-primary transition-colors mb-4">
+          <ArrowLeft className="w-4 h-4" />返回上一步
+        </button>
+      )}
+
       {submitting ? (
         <div className="card p-10"><LoadingSpinner text="AI 正在匹配病症，生成医生级处理意见…" /></div>
       ) : (
@@ -64,7 +99,7 @@ export default function Consult() {
               <div className="grid grid-cols-5 gap-3">
                 {bodyParts.map((bp) => (
                   <button key={bp.id} onClick={() => store.setBodyPart(bp.id)} className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${store.bodyPartId === bp.id ? 'border-primary bg-primary/5' : 'border-neutral-200 hover:border-primary/50'}`}>
-                    <div className="text-2xl">{emojiMap[bp.id]}</div>
+                    <div className="text-2xl">{bodyPartEmojis[bp.id]}</div>
                     <span className={`text-xs font-medium ${store.bodyPartId === bp.id ? 'text-primary' : 'text-neutral-600'}`}>{bp.name}</span>
                   </button>
                 ))}
@@ -73,10 +108,46 @@ export default function Consult() {
           )}
           {store.step === 1 && (
             <div>
-              <h2 className="font-display text-xl sm:text-2xl font-bold text-neutral-900 mb-2">请详细描述您的症状</h2>
-              <p className="text-sm text-neutral-500 mb-6">例如：右侧太阳穴搏动性头痛，伴有恶心，从今早开始</p>
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <h2 className="font-display text-xl sm:text-2xl font-bold text-neutral-900 mb-2">请详细描述您的症状</h2>
+                  <p className="text-sm text-neutral-500">越详细，AI 诊断越精准。可点击下方提示快速补充</p>
+                </div>
+                <button onClick={handleAIGenerate} disabled={aiGenerating} className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors disabled:opacity-50">
+                  <Wand2 className={`w-4 h-4 ${aiGenerating ? 'animate-spin' : ''}`} />
+                  {aiGenerating ? '生成中…' : 'AI 帮我描述'}
+                </button>
+              </div>
               <textarea value={store.description} onChange={(e) => store.setDescription(e.target.value)} rows={5} placeholder="请尽可能详细地描述您的不适…" className="input-base resize-none" />
               <div className="flex justify-between mt-2 text-xs text-neutral-400"><span>建议至少 5 个字</span><span>{store.description.length} 字</span></div>
+
+              {/* AI 症状提示：根据所选部位推荐相关症状关键词 */}
+              {symptomHints.length > 0 && (
+                <div className="mt-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-semibold text-neutral-600 flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5 text-primary" />
+                      AI 症状提示（{bodyParts.find(b => b.id === store.bodyPartId)?.name}相关）
+                    </p>
+                    <button onClick={() => setHintSeed(s => s + 1)} className="text-xs text-neutral-400 hover:text-primary transition-colors inline-flex items-center gap-1">
+                      <RefreshCw className="w-3 h-3" />换一批
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {symptomHints.map((h) => {
+                      const active = store.description.includes(h.text);
+                      return (
+                        <button key={h.text} onClick={() => appendToDescription(h.text)}
+                          title={`常见于：${h.category}`}
+                          className={`tag text-xs !py-1 !px-2 ${active ? 'tag-active' : 'tag-default'}`}>
+                          {active ? '✓ ' : '+ '}{h.text}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="mt-6 space-y-5">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold text-neutral-600">快速描述（点击追加到上面）</p>
@@ -89,8 +160,8 @@ export default function Consult() {
                       {group.items.map((t) => {
                         const active = store.description.includes(t);
                         return (
-                          <button key={t} onClick={() => store.setDescription(store.description + (store.description && !store.description.endsWith('，') ? '，' : '') + t)}
-                            className={`tag text-xs !py-1 !px-2 ${active ? 'tag-active' : 'tag-default'}`}>+ {t}</button>
+                          <button key={t} onClick={() => appendToDescription(t)}
+                            className={`tag text-xs !py-1 !px-2 ${active ? 'tag-active' : 'tag-default'}`}>{active ? '✓ ' : '+ '}{t}</button>
                         );
                       })}
                     </div>
@@ -102,8 +173,8 @@ export default function Consult() {
                     {quickLocationTags.map((t) => {
                       const active = store.description.includes(t);
                       return (
-                        <button key={t} onClick={() => store.setDescription(store.description + (store.description && !store.description.endsWith('，') ? '，' : '') + t)}
-                          className={`tag text-xs !py-1 !px-2 ${active ? 'tag-active' : 'tag-default'}`}>+ {t}</button>
+                        <button key={t} onClick={() => appendToDescription(t)}
+                          className={`tag text-xs !py-1 !px-2 ${active ? 'tag-active' : 'tag-default'}`}>{active ? '✓ ' : '+ '}{t}</button>
                       );
                     })}
                   </div>
@@ -187,7 +258,7 @@ export default function Consult() {
 
       {!submitting && (
         <div className="flex items-center justify-between mt-6">
-          <button onClick={() => store.step === 0 ? navigate(-1) : (store.setStep(store.step - 1), setError(''))} className="btn-ghost">
+          <button onClick={goBack} className="btn-ghost">
             <ArrowLeft className="w-4 h-4" />{store.step === 0 ? '返回' : '上一步'}
           </button>
           <button onClick={handleNext} disabled={!canProceed} className="btn-primary">

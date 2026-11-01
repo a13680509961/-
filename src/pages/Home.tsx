@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Heart, Brain, Stethoscope, BookOpen, Clock, ClipboardList, ArrowRight, Sparkles, Zap, FileText, BookMarked } from 'lucide-react';
 import { mockArticles } from '@/data/mockArticles';
-import { bodyParts } from '@/data/bodyParts';
+import { bodyParts, bodyPartEmojis } from '@/data/bodyParts';
+import { mockDiseases } from '@/data/mockDiseases';
+import { clinicalScales } from '@/data/clinicalScales';
+import { clinicalGuidelines } from '@/data/guidelines';
 
 const features = [
   { icon: Stethoscope, title: '智能问诊', desc: '多维度症状采集，AI 辅助健康分析', color: 'bg-primary/10 text-primary', to: '/consult' },
@@ -12,12 +15,10 @@ const features = [
 ];
 
 const stats = [
-  { icon: Brain, value: '15+', label: '常见病症' },
-  { icon: ClipboardList, value: '6 份', label: '临床量表' },
-  { icon: BookMarked, value: '6 部', label: '临床指南' },
+  { icon: Brain, value: `${mockDiseases.length} 种`, label: '常见病症' },
+  { icon: ClipboardList, value: `${clinicalScales.length} 份`, label: '临床量表' },
+  { icon: BookMarked, value: `${clinicalGuidelines.length} 部`, label: '临床指南' },
 ];
-
-const emojiMap: Record<string, string> = { head: '🧠', eye: '👁️', ear: '👂', throat: '🫦', chest: '🫀', stomach: '🫃', back: '🦴', arm: '✋', leg: '🦵', skin: '✨' };
 
 export default function Home() {
   return (
@@ -104,11 +105,11 @@ export default function Home() {
             </div>
             <Link to="/consult" className="hidden sm:flex items-center gap-1 text-primary text-sm font-medium hover:gap-2 transition-all">开始问诊 <ArrowRight className="w-4 h-4" /></Link>
           </div>
-          <div className="grid grid-cols-5 sm:grid-cols-10 gap-3 sm:gap-4">
+          <div className="grid grid-cols-5 sm:grid-cols-7 gap-3 sm:gap-4">
             {bodyParts.map((bp) => (
               <Link key={bp.id} to="/consult" className="group flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-primary/5 transition-colors">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-neutral-100 group-hover:bg-primary/10 flex items-center justify-center text-2xl">
-                  {emojiMap[bp.id]}
+                  {bodyPartEmojis[bp.id]}
                 </div>
                 <span className="text-xs text-neutral-600 group-hover:text-primary font-medium">{bp.name}</span>
               </Link>

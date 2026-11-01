@@ -4,6 +4,13 @@ export interface BodyPart {
   keywords: string[];
 }
 
+/** 各部位展示用 emoji（首页 / 问诊页共用，与 bodyParts 的 14 个 id 一一对应） */
+export const bodyPartEmojis: Record<string, string> = {
+  head: '🧠', eye: '👁️', ear: '👂', throat: '🫦', chest: '🫀',
+  stomach: '🫃', back: '🦴', arm: '✋', leg: '🦵', skin: '✨',
+  neck: '🦒', limbs: '🦵', genital: '🚻', mouth: '👄',
+};
+
 export const bodyParts: BodyPart[] = [
   { id: 'head', name: '头部', keywords: ['头', '头痛', '头部'] },
   { id: 'eye', name: '眼部', keywords: ['眼', '眼睛', '视力'] },
