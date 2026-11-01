@@ -1,0 +1,12 @@
+# Netlify 自动部署配置
+# 每次 git push 到主分支后，Netlify 自动执行以下构建并发布
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA 路由回退：所有路径都交给 index.html 处理（react-router 需要）
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

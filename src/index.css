@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { font-family: '"Noto Sans SC"', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { @apply bg-neutral-50 text-neutral-800; }
+  h1, h2, h3 { @apply font-display; }
+}
+
+@layer components {
+  .btn-primary { @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-primary text-white font-medium shadow-lg shadow-primary/20 hover:bg-primary-dark hover:shadow-primary/30 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-secondary { @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white border border-neutral-200 text-neutral-700 font-medium hover:border-primary hover:text-primary transition-all duration-200 active:scale-[0.98]; }
+  .btn-ghost { @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-all duration-200; }
+  .card { @apply bg-white rounded-2xl border border-neutral-200/80 shadow-sm hover:shadow-md transition-shadow duration-300; }
+  .tag { @apply inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium border transition-all cursor-pointer select-none; }
+  .tag-default { @apply bg-neutral-100 border-neutral-200 text-neutral-600 hover:border-primary hover:text-primary; }
+  .tag-active { @apply bg-primary/10 border-primary text-primary-dark; }
+  .input-base { @apply w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all; }
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D6D3D1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #A8A29E; }
