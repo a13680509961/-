@@ -82,6 +82,9 @@ export const companionSymptoms: CompanionSymptom[] = [
   { id: 'pain', name: '疼痛', category: '皮肤与其他', keywords: ['痛', '疼', '疼痛', '胀痛', '刺痛'] },
   { id: 'rash', name: '皮疹 / 红疹', category: '皮肤与其他', keywords: ['皮疹', '起疹', '红点', '红斑'] },
   { id: 'itching', name: '皮肤瘙痒', category: '皮肤与其他', keywords: ['痒', '瘙痒', '皮肤痒'] },
+  { id: 'swelling', name: '局部肿胀', category: '皮肤与其他', keywords: ['肿', '肿胀', '肿大', '浮肿'] },
+  { id: 'bleeding', name: '出血', category: '皮肤与其他', keywords: ['出血', '流血', '便血', '尿血', '出血不止'] },
+  { id: 'hearing_loss', name: '听力下降', category: '皮肤与其他', keywords: ['听力下降', '听不清', '耳聋', '耳鸣'] },
 ];
 
 // 第 1 步「快速描述」短语，按类别分组
